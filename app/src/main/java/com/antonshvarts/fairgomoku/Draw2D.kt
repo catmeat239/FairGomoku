@@ -125,7 +125,6 @@ class Draw2D(context: Context?, private var logic: GameLogic) : View(context),
             return true
         }
 
-
         //button
         if(logic.figurePlacement != null && buttonRect.contains(x,y)) {
             logic.changeTurn()
