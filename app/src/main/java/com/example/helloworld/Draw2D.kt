@@ -1,12 +1,12 @@
 package com.example.helloworld
 
+import android.R.attr
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
-import android.graphics.fonts.Font
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -16,15 +16,21 @@ import com.example.helloworld.src.GameLogic
 
 class Draw2D(context: Context?, private var logic: GameLogic) : View(context),
     View.OnTouchListener {
-    init{
-        this.setOnTouchListener(this)
-    }
 
+
+
+    val d = resources.getDrawable(R.drawable.bred, null)
     private val paint = Paint()
     private val buttonRect  =  Rect(700 - 300, 1500, 700 + 300, 1500 + 300)
     private val cellSize = 50
     val xShift = getScreenWidth() / 2f - logic.getFieldWidth() * cellSize / 2f
     val yShift = getScreenHeight() / 2f - logic.getFieldHeight() * cellSize / 2f
+
+    init{
+
+        this.setOnTouchListener(this)
+        d.setBounds(0, 0, 100, 500)
+    }
 
     fun getScreenWidth(): Int {
         return Resources.getSystem().displayMetrics.widthPixels
@@ -41,7 +47,7 @@ class Draw2D(context: Context?, private var logic: GameLogic) : View(context),
         }
         canvas?.drawPaint(this.paint)
 
-
+        drawPicture(canvas)
         drawField(canvas)
         drawButton(canvas)
         drawText(canvas)
@@ -52,6 +58,7 @@ class Draw2D(context: Context?, private var logic: GameLogic) : View(context),
             paint.color = Color.LTGRAY
         canvas?.drawRect(buttonRect, paint)
     }
+
     fun drawText(canvas: Canvas?) {
         paint.textSize = 48F
         Log.d("Game", "Who win in DrawText = ${logic.whoWin}")
@@ -63,6 +70,9 @@ class Draw2D(context: Context?, private var logic: GameLogic) : View(context),
             canvas?.drawText("proghu proshenia zra bakaknul ${if (logic.getTurn()) "BLUE" else "RED"}", 100f, 500f, paint)
         }
 
+    }
+    fun drawPicture(canvas : Canvas?) {
+        d.draw(canvas!!)
     }
 
     fun drawField( canvas: Canvas?) {
