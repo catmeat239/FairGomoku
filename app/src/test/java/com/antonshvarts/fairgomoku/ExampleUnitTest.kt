@@ -1,4 +1,4 @@
-package com.example.helloworld
+package com.antonshvarts.fairgomoku
 
 import org.junit.Test
 

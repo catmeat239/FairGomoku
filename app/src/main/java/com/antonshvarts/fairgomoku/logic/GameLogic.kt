@@ -1,4 +1,4 @@
-package com.example.helloworld.src
+package com.antonshvarts.fairgomoku.logic
 
 import android.graphics.Rect
 import android.util.Log
