@@ -1,19 +1,32 @@
 package com.antonshvarts.fairgomoku.logic
 
 import android.graphics.Rect
+import android.os.CountDownTimer
 import android.util.Log
+import com.antonshvarts.fairgomoku.online.Server
 
 
+class GameLogic (
+    private val isOnline : Boolean = false,
+    private val width : Int = 15,
+    private val height: Int = 15,
+    private val winSize : Int = 4,
+    private val timeForTern : Long = 30000L) {
 
-class GameLogic (private val width : Int = 15, private val height: Int = 15, private val winSize : Int = 4,) {
 
+    private var server : Server? = null
     init{
+        Log.d("Game"," User has set ${if(isOnline) "online" else "offline"} mode")
         if(width <= 0 || height <= 0)
             throw Exception("width <= 0 or height <= 0")
+        if (isOnline){
+            server = Server()
+        }
     }
     private val field : Array<Array<Cell>> = Array(height) {Array(width,) { Cell.EMPTY }}
     private var isBluePlaying = true
 
+   // private var timer = CountDownTimer()
     private var emptyCells = width * height
     var figurePlacement : Pair<Int, Int>? = null
     var blueFigure : Pair<Int, Int>? = null
@@ -60,7 +73,11 @@ class GameLogic (private val width : Int = 15, private val height: Int = 15, pri
             blueFigure = figurePlacement
             figurePlacement = null
             this.setCell(blueFigure!!, Cell.EMPTY)
+            if(isOnline) {
+
+            }
         } else {
+            // this else block is for offline
             if(blueFigure?.first == figurePlacement?.first && blueFigure?.second == figurePlacement?.second) {
                 setCell(blueFigure!!, Cell.GRAY)
                 emptyCells--

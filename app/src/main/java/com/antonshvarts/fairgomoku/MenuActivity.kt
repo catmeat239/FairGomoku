@@ -14,6 +14,12 @@ class MenuActivity : AppCompatActivity() {
         //offlineButton.playSoundEffect(SoundEffectConstants.CLICK)
         offlineButton.setOnClickListener {
             val intent = Intent(this@MenuActivity, MainActivity::class.java)
+            intent.putExtra("mode",false)
+            startActivity(intent)
+        }
+        onlineButton.setOnClickListener {
+            val intent = Intent(this@MenuActivity, MainActivity::class.java)
+            intent.putExtra("mode",true)
             startActivity(intent)
         }
     }
