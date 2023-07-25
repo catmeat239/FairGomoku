@@ -33,35 +33,6 @@
           ]
         }
       }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:1064769027118:android:d45907c81ed9304386f3bf",
-        "android_client_info": {
-          "package_name": "com.antonshvarts.fairgomoku.logic"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "1064769027118-7ev4pq5b0jsqog987n100cok7nf0pron.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAh0xUb2w5ip8WK3DNNzN6yOCHV9Wecna0"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "1064769027118-7ev4pq5b0jsqog987n100cok7nf0pron.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
     }
   ],
   "configuration_version": "1"

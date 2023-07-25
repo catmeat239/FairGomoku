@@ -1,9 +1,8 @@
 package com.antonshvarts.fairgomoku.logic
 
 import android.graphics.Rect
-import android.os.CountDownTimer
 import android.util.Log
-import com.antonshvarts.fairgomoku.online.Server
+import com.antonshvarts.fairgomoku.Draw2D
 
 
 class GameLogic (
@@ -12,24 +11,23 @@ class GameLogic (
     private val height: Int = 15,
     private val winSize : Int = 4,
     private val timeForTern : Long = 30000L) {
+    var isDataSent: Boolean =false
+    private lateinit var draw2D :Draw2D
 
-
-    private var server : Server? = null
     init{
         Log.d("Game"," User has set ${if(isOnline) "online" else "offline"} mode")
         if(width <= 0 || height <= 0)
             throw Exception("width <= 0 or height <= 0")
-        if (isOnline){
-            server = Server()
-        }
     }
     private val field : Array<Array<Cell>> = Array(height) {Array(width,) { Cell.EMPTY }}
-    private var isBluePlaying = true
+    var isBluePlaying = true
 
    // private var timer = CountDownTimer()
     private var emptyCells = width * height
+
+    var redFigure : Pair<Int, Int>? = null // second if online
+    var blueFigure : Pair<Int, Int>? = null // first if online
     var figurePlacement : Pair<Int, Int>? = null
-    var blueFigure : Pair<Int, Int>? = null
     var whoWin : String? = null
     fun getCell(i : Int, j : Int) : Cell = field[i][j]
     // i -> Oy
@@ -69,47 +67,45 @@ class GameLogic (
 
     fun changeTurn() {
         // do not forget to check if somebody has won
-        if(isBluePlaying) {
-            blueFigure = figurePlacement
-            figurePlacement = null
-            this.setCell(blueFigure!!, Cell.EMPTY)
-            if(isOnline) {
 
-            }
+        if(blueFigure?.first == redFigure?.first && blueFigure?.second == redFigure?.second) {
+            setCell(blueFigure!!, Cell.GRAY)
+            emptyCells--
         } else {
-            // this else block is for offline
-            if(blueFigure?.first == figurePlacement?.first && blueFigure?.second == figurePlacement?.second) {
-                setCell(blueFigure!!, Cell.GRAY)
-                emptyCells--
-            } else {
-                setCell(blueFigure!!, Cell.BLUE)
-                setCell(figurePlacement!!, Cell.RED)
-                emptyCells -= 2
-                if (checkWin(blueFigure!!)) {
-                    if(checkWin(figurePlacement!!)) {
-                        whoWin = "TIE"
-                        // tie
-                    } else {
-                        whoWin = "BLUE WON"
-                        // blue
-                    }
+            setCell(blueFigure!!, Cell.BLUE)
+            setCell(redFigure!!, Cell.RED)
+            emptyCells -= 2
+            if (checkWin(blueFigure!!)) {
+                if(checkWin(redFigure!!)) {
+                    whoWin = "TIE"
+                    // tie
                 } else {
-                    if(checkWin(figurePlacement!!)) {
-                        whoWin = "RED WON"
-                        // red
-                    }
-
+                    whoWin = "BLUE WON"
+                    // blue
+                }
+            } else {
+                if(checkWin(redFigure!!)) {
+                    whoWin = "RED WON"
+                    // red
                 }
 
             }
-            if(whoWin == null && emptyCells <= 0)
-                whoWin = "TIE"
-            Log.d("Game", "Who win in changeTurn = ${whoWin}")
-            blueFigure = null
-            figurePlacement = null
+
         }
-        Log.d("Game", "emptySells = $emptyCells")
-        isBluePlaying = !isBluePlaying
+        if(whoWin == null && emptyCells <= 0)
+            whoWin = "TIE"
+        Log.d("Game", "Who win in changeTurn = ${whoWin}")
+
+        blueFigure = null
+        redFigure = null
+        figurePlacement = null
+        isDataSent = false
+        draw2D.invalidate()
     }
+
+    fun setReDraw(draw2D: Draw2D) {
+        this.draw2D = draw2D
+    }
+
 
 }

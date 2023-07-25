@@ -1,6 +1,5 @@
 package com.antonshvarts.fairgomoku
 
-import android.R.attr
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Canvas
@@ -12,12 +11,12 @@ import android.view.MotionEvent
 import android.view.View
 import com.antonshvarts.fairgomoku.logic.Cell
 import com.antonshvarts.fairgomoku.logic.GameLogic
+import com.antonshvarts.fairgomoku.online.Server
+import com.antonshvarts.fairgomoku.online.TurnInfo
 
 
-class Draw2D(context: Context?, private var logic: GameLogic) : View(context),
+class Draw2D(context: Context?, private val logic: GameLogic, private val server : Server?) : View(context),
     View.OnTouchListener {
-
-
 
     val d = resources.getDrawable(R.drawable.bred, null)
     private val paint = Paint()
@@ -27,7 +26,7 @@ class Draw2D(context: Context?, private var logic: GameLogic) : View(context),
     val yShift = getScreenHeight() / 2f - logic.getFieldHeight() * cellSize / 2f
 
     init{
-
+        logic.setReDraw(this)
         this.setOnTouchListener(this)
         d.setBounds(0, 0, 100, 500)
     }
@@ -54,7 +53,7 @@ class Draw2D(context: Context?, private var logic: GameLogic) : View(context),
     }
     fun drawButton(canvas: Canvas?) {
         paint.color = Color.GREEN
-        if(logic.figurePlacement == null)
+        if(logic.figurePlacement == null || logic.blueFigure != null)
             paint.color = Color.LTGRAY
         canvas?.drawRect(buttonRect, paint)
     }
@@ -124,10 +123,29 @@ class Draw2D(context: Context?, private var logic: GameLogic) : View(context),
             // TODO(WORKS ONLY BACK AND RETURN TO MENU BUTTON)
             return true
         }
-
+        // todo(block the users touch if in online he already use his move)
         //button
+
         if(logic.figurePlacement != null && buttonRect.contains(x,y)) {
-            logic.changeTurn()
+
+            logic.blueFigure = logic.figurePlacement
+            logic.figurePlacement = null
+            if(server != null)
+                // mode is online so user is second
+                if(!logic.isDataSent) {
+                    server.sendData(
+                        TurnInfo(
+                            this.logic.blueFigure!!.first,
+                            logic.blueFigure!!.second
+                        )
+                    )
+                    logic.isDataSent = true
+                    if(logic.redFigure != null) {
+                        logic.changeTurn()
+                    }
+                } else if(logic.redFigure != null)
+                // just offline
+                logic.changeTurn()
         }
         //field
         if (Rect(
@@ -135,19 +153,15 @@ class Draw2D(context: Context?, private var logic: GameLogic) : View(context),
                 yShift.toInt() - cellSize / 2,
                 (xShift+cellSize*logic.getFieldWidth()).toInt() + cellSize / 2,
                 (yShift+cellSize*logic.getFieldHeight()).toInt() + cellSize / 2
-            ).contains(x,y)){
-            val j = ((x - xShift) / cellSize +0.5).toInt()
-            val i = ((y - yShift) / cellSize +0.5).toInt()
-            if(logic.getCell(i,j)==Cell.EMPTY){
-                if(logic.figurePlacement != null) {
-                    logic.setCell(
-                        logic.figurePlacement!!.first,
-                        logic.figurePlacement!!.second,
-                        Cell.EMPTY
-                    )
-                }
+            ).contains(x,y) && logic.blueFigure == null) {
+            val j = ((x - xShift) / cellSize + 0.5).toInt()
+            val i = ((y - yShift) / cellSize + 0.5).toInt()
+
+            if (logic.getCell(i,j) == Cell.EMPTY) {
+                if(logic.figurePlacement != null) logic.setCell(logic.figurePlacement!!, Cell.EMPTY)
                 logic.figurePlacement = Pair(i,j)
-                logic.setCell(i,j,if (logic.getTurn()) Cell.BLUE else Cell.RED )
+                logic.setCell(i, j, Cell.BLUE)
+                // TODO send move to server (maybe not here)
             }
         }
         invalidate()
