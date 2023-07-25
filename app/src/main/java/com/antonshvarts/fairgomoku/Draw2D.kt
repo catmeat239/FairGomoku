@@ -1,6 +1,7 @@
 package com.antonshvarts.fairgomoku
 
 import android.content.Context
+import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Color
@@ -9,14 +10,17 @@ import android.graphics.Rect
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat.startActivity
 import com.antonshvarts.fairgomoku.logic.Cell
 import com.antonshvarts.fairgomoku.logic.GameLogic
 import com.antonshvarts.fairgomoku.online.Server
 import com.antonshvarts.fairgomoku.online.TurnInfo
 
 
-class Draw2D(context: Context?, private val logic: GameLogic, private val server : Server?) : View(context),
+class Draw2D(context: Context?, private val logic: GameLogic, val server : Server?) : View(context),
     View.OnTouchListener {
+
 
     val d = resources.getDrawable(R.drawable.bred, null)
     private val paint = Paint()
@@ -41,8 +45,8 @@ class Draw2D(context: Context?, private val logic: GameLogic, private val server
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         this.paint.apply {
-            style = Paint.Style.FILL // стиль Заливка
-            color = Color.WHITE // закрашиваем холст белым цветом
+            style = Paint.Style.FILL
+            color = Color.WHITE
         }
         canvas?.drawPaint(this.paint)
 
@@ -123,10 +127,25 @@ class Draw2D(context: Context?, private val logic: GameLogic, private val server
             // TODO(WORKS ONLY BACK AND RETURN TO MENU BUTTON)
             return true
         }
+        if(d.bounds.contains(x, y)) {
+            val backToMenuDialogBuilder = AlertDialog.Builder(context)
+
+            backToMenuDialogBuilder.setMessage("Are you sure?")
+            backToMenuDialogBuilder.setPositiveButton("Yes") { _, _ -> {}
+                (context as MainActivity).finish()
+                //val intent = Intent(context, MenuActivity::class.java)
+                //startActivity(intent)
+
+            }
+            backToMenuDialogBuilder.setNegativeButton("No") { _, _ -> {} }
+            backToMenuDialogBuilder.setCancelable(true)
+            backToMenuDialogBuilder.show()
+        }
+
         // todo(block the users touch if in online he already use his move)
         //button
 
-        if(logic.figurePlacement != null && buttonRect.contains(x,y)) {
+        if(logic.blueFigure == null && logic.figurePlacement != null && buttonRect.contains(x,y)) {
 
             logic.blueFigure = logic.figurePlacement
             logic.figurePlacement = null

@@ -101,6 +101,7 @@ class GameLogic (
         figurePlacement = null
         isDataSent = false
         draw2D.invalidate()
+        draw2D.server!!.turnEnded()
     }
 
     fun setReDraw(draw2D: Draw2D) {

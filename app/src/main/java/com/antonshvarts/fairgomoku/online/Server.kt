@@ -17,9 +17,8 @@ class Server(private var gameID:String, val myID : String, val opponentsID : Str
         override fun onDataChange(snapshot: DataSnapshot) {
             Log.d("Game", "Hren=: ${hrenForDataListener.toString()}")
             if (!hrenForDataListener) {
-
                 val data = snapshot.getValue<TurnInfo>()
-                Log.d("Game", "Data has arrived: ${data.toString()}")
+                Log.d("Game", "Data has arrived: ${data.toString()} turn: ${turnNumb}")
                 if (data != null) {
                     logic.redFigure = Pair(data.x, data.y)
                 }
@@ -35,6 +34,18 @@ class Server(private var gameID:String, val myID : String, val opponentsID : Str
             Log.w("Game", "Server:onCancelled", error.toException())
         }
     }
+    //todo delete checkIfDataCame fun
+    private fun checkIfDataCame() {
+
+        Thread.sleep(3000)
+        database.child(opponentsID).child(turnNumb.toString()).get().addOnSuccessListener {
+            Log.i("GameBase", "Got value ${it.value}")
+        }.addOnFailureListener{
+            Log.e("GameBase", "Error getting data", it)
+        }
+
+    }
+
     private var turnNumb:Int = 0
     // WE ARE BLUE!!! WE ARE BLUE!!! WE ARE BLUE !!!
    // private var turnNumberTimesTwo :Int = 0
@@ -47,17 +58,14 @@ class Server(private var gameID:String, val myID : String, val opponentsID : Str
     fun sendData(data : TurnInfo) {
         val newData = database.child(myID).child(turnNumb.toString())
         newData.setValue(data)
-        if (!logic.isDataSent) {
-            turnNumb++
-            setListenerToData()
-        }
-        else{
-            setListenerToData()
-            turnNumb++
-        }
+
         logic.isDataSent = true
         Log.d("Game","Data has sent: ${data.toString()}")
         Log.d("Game", "Can get the data ${newData}, Turn: $turnNumb")
+    }
+    fun turnEnded() {
+        turnNumb++
+        setListenerToData()
     }
 
 private fun setListenerToData(){
