@@ -1,7 +1,6 @@
 package com.antonshvarts.fairgomoku
 
 import android.content.Context
-import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Color
@@ -11,7 +10,6 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat.startActivity
 import com.antonshvarts.fairgomoku.logic.Cell
 import com.antonshvarts.fairgomoku.logic.GameLogic
 import com.antonshvarts.fairgomoku.online.Server
@@ -22,9 +20,10 @@ class Draw2D(context: Context?, private val logic: GameLogic, val server : Serve
     View.OnTouchListener {
 
 
-    val d = resources.getDrawable(R.drawable.bred, null)
+    private var timeLeft: Long = 30
+    val backButton = resources.getDrawable(R.drawable.back_button, null)
     private val paint = Paint()
-    private val buttonRect  =  Rect(700 - 300, 1500, 700 + 300, 1500 + 300)
+    private val buttonRect  =  Rect(getScreenWidth() / 2 - 300, 1500, getScreenWidth() / 2 + 300, 1500 + 300)
     private val cellSize = 50
     val xShift = getScreenWidth() / 2f - logic.getFieldWidth() * cellSize / 2f
     val yShift = getScreenHeight() / 2f - logic.getFieldHeight() * cellSize / 2f
@@ -32,7 +31,8 @@ class Draw2D(context: Context?, private val logic: GameLogic, val server : Serve
     init{
         logic.setReDraw(this)
         this.setOnTouchListener(this)
-        d.setBounds(0, 0, 100, 500)
+        backButton.dirtyBounds
+        backButton.setBounds(0, 0, backButton.minimumWidth / 7, backButton.minimumHeight / 7)
     }
 
     fun getScreenWidth(): Int {
@@ -49,12 +49,19 @@ class Draw2D(context: Context?, private val logic: GameLogic, val server : Serve
             color = Color.WHITE
         }
         canvas?.drawPaint(this.paint)
-
         drawPicture(canvas)
         drawField(canvas)
         drawButton(canvas)
         drawText(canvas)
+        drawTimer(canvas)
     }
+
+    private fun drawTimer(canvas: Canvas?) {
+        paint.textSize = 48F
+        paint.color = Color.BLACK
+        canvas?.drawText(timeLeft.toString(), 100f, 700f, paint)
+    }
+
     fun drawButton(canvas: Canvas?) {
         paint.color = Color.GREEN
         if(logic.figurePlacement == null || logic.blueFigure != null)
@@ -70,12 +77,13 @@ class Draw2D(context: Context?, private val logic: GameLogic, val server : Serve
             canvas?.drawText("GAME OVER!!! ${logic.whoWin}", 100f, 500f, paint)
         } else {
             paint.color = if(logic.getTurn()) Color.BLUE else Color.RED
-            canvas?.drawText("proghu proshenia zra bakaknul ${if (logic.getTurn()) "BLUE" else "RED"}", 100f, 500f, paint)
+            if(server == null)
+                canvas?.drawText("YOUR TURN, ${if (logic.getTurn()) "BLUE" else "RED"}", 100f, 500f, paint)
         }
 
     }
     fun drawPicture(canvas : Canvas?) {
-        d.draw(canvas!!)
+        backButton.draw(canvas!!)
     }
 
     fun drawField( canvas: Canvas?) {
@@ -127,7 +135,7 @@ class Draw2D(context: Context?, private val logic: GameLogic, val server : Serve
             // TODO(WORKS ONLY BACK AND RETURN TO MENU BUTTON)
             return true
         }
-        if(d.bounds.contains(x, y)) {
+        if(backButton.bounds.contains(x, y)) {
             val backToMenuDialogBuilder = AlertDialog.Builder(context)
 
             backToMenuDialogBuilder.setMessage("Are you sure?")
@@ -145,26 +153,37 @@ class Draw2D(context: Context?, private val logic: GameLogic, val server : Serve
         // todo(block the users touch if in online he already use his move)
         //button
 
-        if(logic.blueFigure == null && logic.figurePlacement != null && buttonRect.contains(x,y)) {
+        if(logic.figurePlacement != null && buttonRect.contains(x,y)) {
+            if(logic.blueFigure == null) {
+                logic.blueFigure = logic.figurePlacement
+                logic.figurePlacement = null
+                logic.isBluePlaying = false
+                if(server == null) {
+                    logic.setCell(logic.blueFigure!!, Cell.EMPTY)
+                    logic.changeTimer()
+                }
 
-            logic.blueFigure = logic.figurePlacement
-            logic.figurePlacement = null
-            if(server != null)
+                if(server != null)
                 // mode is online so user is second
-                if(!logic.isDataSent) {
-                    server.sendData(
-                        TurnInfo(
-                            this.logic.blueFigure!!.first,
-                            logic.blueFigure!!.second
+                    if(!logic.isDataSent) {
+                        server.sendData(
+                            TurnInfo(
+                                this.logic.blueFigure!!.first,
+                                logic.blueFigure!!.second
+                            )
                         )
-                    )
-                    logic.isDataSent = true
-                    if(logic.redFigure != null) {
-                        logic.changeTurn()
+                        logic.isDataSent = true
+                        if(logic.redFigure != null) {
+                            logic.changeTurn()
+                        }
                     }
-                } else if(logic.redFigure != null)
-                // just offline
+            } else if(server == null) {
+                logic.redFigure = logic.figurePlacement
+                logic.figurePlacement = null
+                logic.isBluePlaying = true
                 logic.changeTurn()
+            }
+
         }
         //field
         if (Rect(
@@ -172,14 +191,15 @@ class Draw2D(context: Context?, private val logic: GameLogic, val server : Serve
                 yShift.toInt() - cellSize / 2,
                 (xShift+cellSize*logic.getFieldWidth()).toInt() + cellSize / 2,
                 (yShift+cellSize*logic.getFieldHeight()).toInt() + cellSize / 2
-            ).contains(x,y) && logic.blueFigure == null) {
+            ).contains(x,y) && (server == null || logic.blueFigure == null)) {
             val j = ((x - xShift) / cellSize + 0.5).toInt()
             val i = ((y - yShift) / cellSize + 0.5).toInt()
 
             if (logic.getCell(i,j) == Cell.EMPTY) {
                 if(logic.figurePlacement != null) logic.setCell(logic.figurePlacement!!, Cell.EMPTY)
                 logic.figurePlacement = Pair(i,j)
-                logic.setCell(i, j, Cell.BLUE)
+                if(server == null) logic.setCell(i, j, if(logic.getTurn()) Cell.BLUE else Cell.RED)
+                else logic.setCell(i, j, Cell.BLUE)
                 // TODO send move to server (maybe not here)
             }
         }
@@ -189,5 +209,10 @@ class Draw2D(context: Context?, private val logic: GameLogic, val server : Serve
 
     override fun performClick(): Boolean {
         return super.performClick()
+    }
+
+    fun updateTimer(t : Long) {
+        timeLeft = t
+        invalidate()
     }
 }

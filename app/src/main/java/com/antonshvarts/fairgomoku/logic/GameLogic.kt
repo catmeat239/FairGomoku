@@ -1,6 +1,7 @@
 package com.antonshvarts.fairgomoku.logic
 
 import android.graphics.Rect
+import android.os.CountDownTimer
 import android.util.Log
 import com.antonshvarts.fairgomoku.Draw2D
 
@@ -11,10 +12,13 @@ class GameLogic (
     private val height: Int = 15,
     private val winSize : Int = 4,
     private val timeForTern : Long = 30000L) {
+    lateinit private var timer: CountDownTimer
     var isDataSent: Boolean =false
     private lateinit var draw2D :Draw2D
 
     init{
+        timer = createTimer()
+        timer.start()
         Log.d("Game"," User has set ${if(isOnline) "online" else "offline"} mode")
         if(width <= 0 || height <= 0)
             throw Exception("width <= 0 or height <= 0")
@@ -43,18 +47,20 @@ class GameLogic (
     fun getFieldWidth() = width - 1
     fun getFieldHeight()= height - 1
     fun getTurn() = isBluePlaying
-    private fun countCnt(i : Int, j : Int, delta : Pair<Int, Int>) : Int {
-        var cnt = 0
 
-        while(Rect(0,0,field.size, field[0].size).contains(i + cnt * delta.first, j + cnt * delta.second)
-            &&  field[i + cnt * delta.first][j + cnt * delta.second] == field[i][j]) {
-            cnt++
-
-        }
-        Log.d("Game", "countCnt returned $cnt")
-        return cnt - 1
-    }
     fun checkWin(p : Pair<Int, Int>) : Boolean {
+
+        fun countCnt(i : Int, j : Int, delta : Pair<Int, Int>) : Int {
+            var cnt = 0
+
+            while(Rect(0,0,field.size, field[0].size).contains(i + cnt * delta.first, j + cnt * delta.second)
+                &&  field[i + cnt * delta.first][j + cnt * delta.second] == field[i][j]) {
+                cnt++
+
+            }
+            //Log.d("Game", "countCnt returned $cnt")
+            return cnt - 1
+        }
         var i = p.first
         var j = p.second
 
@@ -94,14 +100,38 @@ class GameLogic (
         }
         if(whoWin == null && emptyCells <= 0)
             whoWin = "TIE"
-        Log.d("Game", "Who win in changeTurn = ${whoWin}")
+        Log.d("Game", "Who win in changeTurn = $whoWin")
 
         blueFigure = null
         redFigure = null
         figurePlacement = null
-        isDataSent = false
         draw2D.invalidate()
-        draw2D.server!!.turnEnded()
+        if(isOnline) {
+            isDataSent = false
+            draw2D.server!!.turnEnded()
+        }
+
+
+        changeTimer()
+    }
+    fun changeTimer() {
+        timer.cancel()
+        timer = createTimer().start()
+    }
+    fun createTimer(): CountDownTimer {
+        return object: CountDownTimer(3000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                draw2D.updateTimer(millisUntilFinished/1000)
+
+            }
+
+            override fun onFinish() {
+                if(isOnline)
+                    whoWin = "RED WON"
+                else whoWin = if(isBluePlaying) "RED WON" else "BLUE WON"
+                draw2D.invalidate()
+            }
+        }
     }
 
     fun setReDraw(draw2D: Draw2D) {
