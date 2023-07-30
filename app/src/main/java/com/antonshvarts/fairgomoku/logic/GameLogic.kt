@@ -10,7 +10,7 @@ class GameLogic (
     private val isOnline : Boolean = false,
     private val width : Int = 15,
     private val height: Int = 15,
-    private val winSize : Int = 4,
+    private val winSize : Int = 5,
     private val timeForTern : Long = 30000L) {
     lateinit private var timer: CountDownTimer
     var isDataSent: Boolean =false
@@ -29,6 +29,8 @@ class GameLogic (
    // private var timer = CountDownTimer()
     private var emptyCells = width * height
 
+    var moves : MutableList<Pair<Pair<Int,Int>, Pair<Int,Int>>> = MutableList(0)  { Pair(Pair(0, 0), Pair(0, 0)) }
+
     var redFigure : Pair<Int, Int>? = null // second if online
     var blueFigure : Pair<Int, Int>? = null // first if online
     var figurePlacement : Pair<Int, Int>? = null
@@ -43,7 +45,9 @@ class GameLogic (
         Log.d("Game", "setCell: $i $j from ${field[i][j]} to $cell")
         field[i][j] = cell
     }
+    fun addMove() {
 
+    }
     fun getFieldWidth() = width - 1
     fun getFieldHeight()= height - 1
     fun getTurn() = isBluePlaying
@@ -73,7 +77,7 @@ class GameLogic (
 
     fun changeTurn() {
         // do not forget to check if somebody has won
-
+        moves.add(Pair(blueFigure!!, redFigure!!))
         if(blueFigure?.first == redFigure?.first && blueFigure?.second == redFigure?.second) {
             setCell(blueFigure!!, Cell.GRAY)
             emptyCells--
@@ -83,15 +87,15 @@ class GameLogic (
             emptyCells -= 2
             if (checkWin(blueFigure!!)) {
                 if(checkWin(redFigure!!)) {
-                    whoWin = "TIE"
+                    whoWin = "tie"
                     // tie
                 } else {
-                    whoWin = "BLUE WON"
+                    whoWin = "blue"
                     // blue
                 }
             } else {
                 if(checkWin(redFigure!!)) {
-                    whoWin = "RED WON"
+                    whoWin = "red"
                     // red
                 }
 
@@ -99,27 +103,39 @@ class GameLogic (
 
         }
         if(whoWin == null && emptyCells <= 0)
-            whoWin = "TIE"
+            whoWin = "tie"
         Log.d("Game", "Who win in changeTurn = $whoWin")
+        if(whoWin != null) {
+            endGame()
+        } else {
+            blueFigure = null
+            redFigure = null
+            figurePlacement = null
+            draw2D.invalidate()
+            if(isOnline) {
+                isDataSent = false
+                draw2D.gameServer!!.turnEnded()
+            }
 
-        blueFigure = null
-        redFigure = null
-        figurePlacement = null
-        draw2D.invalidate()
-        if(isOnline) {
-            isDataSent = false
-            draw2D.server!!.turnEnded()
+            changeTimer()
         }
 
-
-        changeTimer()
+    }
+    fun endGame() {
+        if(isOnline)
+            draw2D.gameServer!!.sendWin(whoWin!!)
+        timer.cancel()
+        draw2D.invalidate()
+    }
+    fun cancelTimer() {
+        timer.cancel()
     }
     fun changeTimer() {
         timer.cancel()
         timer = createTimer().start()
     }
     fun createTimer(): CountDownTimer {
-        return object: CountDownTimer(3000, 1000) {
+        return object: CountDownTimer(timeForTern, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 draw2D.updateTimer(millisUntilFinished/1000)
 
@@ -127,8 +143,8 @@ class GameLogic (
 
             override fun onFinish() {
                 if(isOnline)
-                    whoWin = "RED WON"
-                else whoWin = if(isBluePlaying) "RED WON" else "BLUE WON"
+                    whoWin = "red"
+                else whoWin = if(isBluePlaying) "red" else "blue"
                 draw2D.invalidate()
             }
         }

@@ -2,5 +2,6 @@
     <string name="app_name">Fair Gomoku</string>
     <string name="play_online_string">PLAY ONLINE</string>
     <string name="play_offline_string">PLAY OFFLINE</string>
+    <string name="play_with_a_friend">PLAY WITH A FRIEND</string>
 
 </resources>

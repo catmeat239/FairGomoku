@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MenuActivity">
+    tools:context=".activity.MenuActivity">
 
     <Button
-        android:id="@+id/playOnline"
+        android:id="@+id/playWithAFriend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/play_online_string"
+        android:text="@string/play_with_a_friend"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
@@ -19,14 +19,21 @@
         app:layout_constraintVertical_bias="0.614" />
 
     <Button
+        android:id="@+id/playOnline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/play_online_string"
+        tools:layout_editor_absoluteX="153dp"
+        tools:layout_editor_absoluteY="259dp" />
+
+    <Button
         android:id="@+id/playOffline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/play_offline_string"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/playOnline"
-        app:layout_constraintVertical_bias="0.218" />
+        app:layout_constraintVertical_bias="0.523" />
 </androidx.constraintlayout.widget.ConstraintLayout>
