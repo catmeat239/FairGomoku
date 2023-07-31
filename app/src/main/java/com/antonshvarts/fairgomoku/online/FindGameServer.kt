@@ -66,4 +66,8 @@ class FindGameServer(val menuActivity: MenuActivity) {
         foundGame = true
         menuActivity.startOnlineGame(playerID, opponentID)
     }
+
+    fun clear() {
+        database.child("waiting").removeValue()
+    }
 }

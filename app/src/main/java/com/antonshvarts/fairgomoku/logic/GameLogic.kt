@@ -4,6 +4,7 @@ import android.graphics.Rect
 import android.os.CountDownTimer
 import android.util.Log
 import com.antonshvarts.fairgomoku.Draw2D
+import com.antonshvarts.fairgomoku.ai.Bot
 
 
 class GameLogic (
@@ -15,6 +16,7 @@ class GameLogic (
     lateinit private var timer: CountDownTimer
     var isDataSent: Boolean =false
     private lateinit var draw2D :Draw2D
+    var bot : Bot = Bot()
 
     init{
         timer = createTimer()
@@ -25,7 +27,7 @@ class GameLogic (
     }
     private val field : Array<Array<Cell>> = Array(height) {Array(width,) { Cell.EMPTY }}
     var isBluePlaying = true
-
+    var withTheComputer = false
    // private var timer = CountDownTimer()
     private var emptyCells = width * height
 
@@ -119,7 +121,7 @@ class GameLogic (
 
             changeTimer()
         }
-
+        isBluePlaying = true
     }
     fun endGame() {
         if(isOnline)
@@ -152,6 +154,10 @@ class GameLogic (
 
     fun setReDraw(draw2D: Draw2D) {
         this.draw2D = draw2D
+    }
+
+    fun moveBot(): Pair<Int, Int> {
+        return bot.move(field)
     }
 
 

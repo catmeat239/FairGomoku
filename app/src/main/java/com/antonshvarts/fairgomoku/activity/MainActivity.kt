@@ -17,7 +17,9 @@ class MainActivity : AppCompatActivity() {
         val arguments:Bundle? = intent.extras
         val isOnline = arguments?.getBoolean("mode")
         val gameLogic : GameLogic = GameLogic(isOnline!!,)
-
+        if(!isOnline) {
+            gameLogic.withTheComputer = arguments.getBoolean("withTheComputer")
+        }
         // setContent`View(R.layout.activity_main)
         var gameServer: GameServer? = null
         if(isOnline) {

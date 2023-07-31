@@ -3,5 +3,6 @@
     <string name="play_online_string">PLAY ONLINE</string>
     <string name="play_offline_string">PLAY OFFLINE</string>
     <string name="play_with_a_friend">PLAY WITH A FRIEND</string>
+    <string name="play_with_the_computer">play with the computer</string>
 
 </resources>

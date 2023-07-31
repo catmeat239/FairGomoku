@@ -1,17 +1,23 @@
 package com.antonshvarts.fairgomoku.activity
 import android.app.Dialog
 import android.content.Intent
+import android.opengl.Visibility
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.antonshvarts.fairgomoku.R
 import com.antonshvarts.fairgomoku.online.FindGameServer
 
 class MenuActivity : AppCompatActivity() {
-     lateinit var dialog :Dialog
+     lateinit var dialog : Dialog
+     lateinit var progressBar : ProgressBar
+     var findGameServer : FindGameServer? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dialog = Dialog(this)
@@ -36,25 +42,55 @@ class MenuActivity : AppCompatActivity() {
         val onlineButton : Button = findViewById(R.id.playOnline)
         val offlineButton : Button = findViewById(R.id.playOffline)
         val playWithAFriendButton : Button = findViewById(R.id.playWithAFriend)
-        //offlineButton.playSoundEffect(SoundEffectConstants.CLICK)
+        val playWithTHeComputerButton : Button = findViewById(R.id.playWithTheComputer)
+        progressBar = findViewById<ProgressBar>(R.id.progressBar)
+        // offlineButton.playSoundEffect(SoundEffectConstants.CLICK)
         offlineButton.setOnClickListener {
             val intent = Intent(this@MenuActivity, MainActivity::class.java)
             intent.putExtra("mode",false)
-
+            intent.putExtra("withTheComputer", false)
             startActivity(intent)
         }
         onlineButton.setOnClickListener {
-            val findGameServer = FindGameServer(this@MenuActivity)
-            dialog.show() // this is loading strip
-            // if you donnot see it, go to the doctor
-
+            findGameServer = FindGameServer(this@MenuActivity)
+            progressBar.visibility = View.VISIBLE
+        }
+        playWithTHeComputerButton.setOnClickListener{
+            val intent = Intent(this@MenuActivity, MainActivity::class.java)
+            intent.putExtra("mode",false)
+            intent.putExtra("withTheComputer", true)
+            startActivity(intent)
         }
         playWithAFriendButton.setOnClickListener {
             dialog.show()
         }
 
     }
+    override fun onDestroy() {
+        progressBar.visibility = View.INVISIBLE
+        if(findGameServer != null) findGameServer!!.clear()
+        super.onDestroy()
+    }
+    override fun onStop() {
+        super.onStop()
+        progressBar.visibility = View.INVISIBLE
+        if(findGameServer != null) findGameServer!!.clear()
+    }
+    override fun onBackPressed() {
+        val backToMenuDialogBuilder = AlertDialog.Builder(this)
+
+        backToMenuDialogBuilder.setMessage("Are you sure?")
+        backToMenuDialogBuilder.setPositiveButton("Yes") { _, _ -> {}
+
+            super.onBackPressed()
+        }
+        backToMenuDialogBuilder.setNegativeButton("No") { _, _ -> {} }
+        backToMenuDialogBuilder.setCancelable(true)
+        backToMenuDialogBuilder.show()
+    }
+
     fun startOnlineGame(myID: String, opponentID: String) {
+        progressBar.visibility = View.GONE
         val intent = Intent(this@MenuActivity, MainActivity::class.java)
         intent.putExtra("mode", true)
         intent.putExtra("myID", myID)

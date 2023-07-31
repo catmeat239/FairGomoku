@@ -36,11 +36,11 @@ class Draw2D(context: Context?, private val logic: GameLogic, val gameServer : G
         backButton.setBounds(0, 0, backButton.minimumWidth / 7, backButton.minimumHeight / 7)
     }
 
-    fun getScreenWidth(): Int {
+    private fun getScreenWidth(): Int {
         return Resources.getSystem().displayMetrics.widthPixels
     }
 
-    fun getScreenHeight(): Int {
+    private fun getScreenHeight(): Int {
         return Resources.getSystem().displayMetrics.heightPixels
     }
     override fun onDraw(canvas: Canvas?) {
@@ -58,18 +58,13 @@ class Draw2D(context: Context?, private val logic: GameLogic, val gameServer : G
         drawTimer(canvas)
        // drawLastMove(canvas)
     }
-    fun drawLastMove(canvas: Canvas?) {
+    private fun drawLastMove(canvas: Canvas?) {
         if(logic.moves.size > 0) {
-            if(false && logic.moves.last().first == logic.moves.last().second) {
-                paint.color = Color.BLACK
-                canvas?.drawCircle(logic.moves.last().first.second * cellSize + xShift, logic.moves.last().first.first * cellSize + yShift, cellSize / 3f, paint)
-            } else {
-                paint.color = Color.GREEN
-                canvas?.drawCircle(logic.moves.last().first.second * cellSize + xShift, logic.moves.last().first.first * cellSize + yShift, cellSize / 2.3f, paint)
-                paint.color = Color.GREEN
-                canvas?.drawCircle(logic.moves.last().second.second * cellSize + xShift, logic.moves.last().second.first * cellSize + yShift, cellSize / 2.3f, paint)
+            paint.color = Color.GREEN
+            canvas?.drawCircle(logic.moves.last().first.second * cellSize + xShift, logic.moves.last().first.first * cellSize + yShift, cellSize / 2.3f, paint)
+            paint.color = Color.GREEN
+            canvas?.drawCircle(logic.moves.last().second.second * cellSize + xShift, logic.moves.last().second.first * cellSize + yShift, cellSize / 2.3f, paint)
 
-            }
         }
         // paint.color = Color.
 
@@ -80,14 +75,14 @@ class Draw2D(context: Context?, private val logic: GameLogic, val gameServer : G
         canvas?.drawText(timeLeft.toString(), 100f, 700f, paint)
     }
 
-    fun drawButton(canvas: Canvas?) {
+    private fun drawButton(canvas: Canvas?) {
         paint.color = Color.GREEN
         if(logic.figurePlacement == null || logic.blueFigure != null)
             paint.color = Color.LTGRAY
         canvas?.drawRect(buttonRect, paint)
     }
 
-    fun drawText(canvas: Canvas?) {
+    private fun drawText(canvas: Canvas?) {
         paint.textSize = 48F
         Log.d("Game", "Who win in DrawText = ${logic.whoWin}")
         if(logic.whoWin != null) {
@@ -100,11 +95,11 @@ class Draw2D(context: Context?, private val logic: GameLogic, val gameServer : G
         }
 
     }
-    fun drawPicture(canvas : Canvas?) {
+    private fun drawPicture(canvas : Canvas?) {
         backButton.draw(canvas!!)
     }
 
-    fun drawField( canvas: Canvas?) {
+    private fun drawField(canvas: Canvas?) {
         // draw grid
         this.paint.color = Color.BLACK
         // horizontal
@@ -182,8 +177,13 @@ class Draw2D(context: Context?, private val logic: GameLogic, val gameServer : G
                 logic.isBluePlaying = false
                 logic.cancelTimer()
                 if(gameServer == null) {
-                    logic.setCell(logic.blueFigure!!, Cell.EMPTY)
-                    logic.changeTimer()
+                    if(logic.withTheComputer) {
+                        logic.redFigure = logic.moveBot()
+                        logic.changeTurn()
+                    } else {
+                        logic.setCell(logic.blueFigure!!, Cell.EMPTY)
+                        logic.changeTimer()
+                    }
                 } else
 
                     if(!logic.isDataSent) {
