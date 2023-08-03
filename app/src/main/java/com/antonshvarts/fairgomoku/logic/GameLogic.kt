@@ -5,6 +5,7 @@ import android.os.CountDownTimer
 import android.util.Log
 import com.antonshvarts.fairgomoku.Draw2D
 import com.antonshvarts.fairgomoku.ai.Bot
+import com.antonshvarts.fairgomoku.ai.minimax.SimpleBot
 
 
 class GameLogic (
@@ -13,12 +14,13 @@ class GameLogic (
     private val height: Int = 15,
     private val winSize : Int = 5,
     private val timeForTern : Long = 30000L) {
-    lateinit private var timer: CountDownTimer
-    var isDataSent: Boolean =false
+    private var timer: CountDownTimer
+    var isDataSent: Boolean = false
     private lateinit var draw2D :Draw2D
-    var bot : Bot = Bot()
+    var bot : Bot = SimpleBot()
 
     init{
+        bot.setDifficulty(4)
         timer = createTimer()
         timer.start()
         Log.d("Game"," User has set ${if(isOnline) "online" else "offline"} mode")

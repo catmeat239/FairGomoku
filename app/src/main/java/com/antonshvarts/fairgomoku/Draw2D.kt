@@ -84,7 +84,7 @@ class Draw2D(context: Context?, private val logic: GameLogic, val gameServer : G
 
     private fun drawText(canvas: Canvas?) {
         paint.textSize = 48F
-        Log.d("Game", "Who win in DrawText = ${logic.whoWin}")
+        //Log.d("Game", "Who win in DrawText = ${logic.whoWin}")
         if(logic.whoWin != null) {
             paint.color = Color.MAGENTA
             canvas?.drawText("GAME OVER!!! ${logic.whoWin}", 100f, 500f, paint)
@@ -178,6 +178,7 @@ class Draw2D(context: Context?, private val logic: GameLogic, val gameServer : G
                 logic.cancelTimer()
                 if(gameServer == null) {
                     if(logic.withTheComputer) {
+                        logic.setCell(logic.blueFigure!!, Cell.EMPTY)
                         logic.redFigure = logic.moveBot()
                         logic.changeTurn()
                     } else {

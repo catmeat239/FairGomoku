@@ -5,8 +5,7 @@ import com.antonshvarts.fairgomoku.logic.Cell
  * Base class for all AI bots,
  * has one public method
  */
-// todo (make it abstract)
- class Bot {
+ abstract class Bot {
     /**
      * @param field in GameLogic with state before move
      * @return random move as Pair<Int,Int>
@@ -23,5 +22,12 @@ import com.antonshvarts.fairgomoku.logic.Cell
             }
         }
         return moves.random()
+    }
+    /**
+     * @param i do nothing,
+     * in further realisations mast set difficulty level
+     */
+    open fun setDifficulty(i: Int){
+
     }
 }
